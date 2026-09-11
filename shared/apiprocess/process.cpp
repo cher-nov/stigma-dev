@@ -69,8 +69,10 @@ SOFTWARE.
 #include <libproc.h>
 #elif (defined(__linux__) || defined(__ANDROID__))
 #include <dirent.h>
+if defined(__has_include)
 #if __has_include(<linux/sched.h>)
 #include <linux/sched.h>
+#endif
 #endif
 #elif ((defined(__FreeBSD__) || defined(__FreeBSD_kernel__)) || defined(__DragonFly__) || defined(__OpenBSD__))
 #include <sys/param.h>
