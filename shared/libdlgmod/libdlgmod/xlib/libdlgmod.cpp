@@ -43,6 +43,9 @@
 #include <libdlgmod/libdlgmod.h>
 #include <libdlgmod/general/lodepng.h>
 #include <xprocess.hpp>
+#if (defined(__linux__) && !defined(__ANDROID__))
+#include <nfd.hpp>
+#endif
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -285,25 +288,50 @@ string remove_trailing_zeros(double numb) {
   return strnumb;
 }
 
+#if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
+std::vector<std::vector<string>> nfd_filter(string input) {
+  input = string_replace_all(input, "\r", "");
+  input = string_replace_all(input, "\n", "");
+  std::vector<string> stringVec = string_split(input, '|');
+  std::vector<std::vector<std::string>> output;
+  std::vector<string> vec;
+  unsigned ind = 0;
+  for (string str : stringVec) {
+    if (ind % 2 == 0) {
+      size_t first = str.find('(');
+      if (first != string::npos) {
+        size_t last = str.find(')', first);
+        if (last != string::npos)
+          str.erase(first, last - first + 1);
+      }
+      vec.push_back(str);
+    } else {
+      vec.push_back(string_replace_all(string_replace_all(str, ";", ","), "*.", ""));
+      output.push_back(vec);
+      vec.clear();
+    }
+    ind++;
+  }
+  return output;
+}
+#endif
+
 string zenity_filter(string input) {
   input = string_replace_all(input, "\r", "");
   input = string_replace_all(input, "\n", "");
   std::vector<string> stringVec = string_split(input, '|');
-  string string_output = "";
-
-  unsigned index = 0;
+  string string_output;
+  unsigned ind = 0;
   for (string str : stringVec) {
-    if (index % 2 == 0)
+    if (ind % 2 == 0)
       string_output += string(" --file-filter=\"") +
         add_escaping(string_replace_all(str, "*.*", "*"), false, "") + string("|");
     else {
       std::replace(str.begin(), str.end(), ';', ' ');
       string_output += add_escaping(string_replace_all(str, "*.*", "*"), false, "") + string("\"");
     }
-
-    index += 1;
+    ind++;
   }
-
   return string_output;
 }
 
@@ -312,11 +340,10 @@ string kdialog_filter(string input) {
   input = string_replace_all(input, "\n", "");
   std::vector<string> stringVec = string_split(input, '|');
   string string_output = " \"";
-
-  unsigned index = 0;
+  unsigned ind = 0;
   for (string str : stringVec) {
-    if (index % 2 == 0) {
-      if (index != 0)
+    if (ind % 2 == 0) {
+      if (ind != 0)
         string_output += "\n";
       size_t first = str.find('(');
       if (first != string::npos) {
@@ -329,10 +356,8 @@ string kdialog_filter(string input) {
       std::replace(str.begin(), str.end(), ';', ' ');
       string_output += add_escaping(string_replace_all(str, "*.*", "*"), false, "") + string(")");
     }
-
-    index += 1;
+    ind++;
   }
-
   string_output += "\"";
   return string_output;
 }
@@ -626,6 +651,38 @@ const char *get_open_filename(const char *filter, const char *fname) {
 }
 
 const char *get_open_filename_ext(const char *filter, const char *fname, const char *dir, const char *title) {
+  #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
+  NFD_Init();
+  static std::string res;
+  nfdu8char_t *outPath;
+  setenv("QT_QPA_PLATFORM", "xcb", 1);
+  setenv("GDK_BACKEND", "x11", 1);
+  std::vector<std::vector<string>> vec;
+  vec = nfd_filter(filter);
+  std::vector<nfdu8filteritem_t> filters;
+  filters.reserve(vec.size());
+  for (const auto &ext : vec) {
+    if (!ext.empty() && ext.size() == 2 && ext[1].find("*") == string::npos) {
+      filters.emplace_back(nfdu8filteritem_t{ ext[0].c_str(), ext[1].c_str() });
+    }
+  }
+  nfdopendialogu8args_t args = { 0 };
+  args.filterList = filters.data();
+  args.filterCount = filters.size();
+  args.defaultPath = ((dir && strlen(dir)) ? dir : (getenv("HOME") ? getenv("HOME") : "/"));
+  args.parentWindow.type = NFD_WINDOW_HANDLE_TYPE_X11;
+  args.parentWindow.handle = (void *)(unsigned long long)strtoul(widget_get_owner(), nullptr, 10);
+  args.title = ((title && strlen(title)) ? title : "Open");
+  args.acceptLabel = widget_get_button_name(BUTTON_OK);
+  args.cancelLabel = widget_get_button_name(BUTTON_CANCEL);
+  nfdresult_t nfdresult = NFD_OpenDialogU8_With(&outPath, &args);
+  if (nfdresult == NFD_OKAY) {
+    res = outPath;
+    NFD_FreePathU8(outPath);
+  }
+  NFD_Quit();
+  return res.c_str();
+  #else
   change_relative_to_kde();
   string str_command; string pwd;
   string caption_previous = caption;
@@ -657,6 +714,7 @@ const char *get_open_filename_ext(const char *filter, const char *fname, const c
   if (file_exists(result))
     return result.c_str();
   return "";
+  #endif
 }
 
 const char *get_open_filenames(const char *filter, const char *fname) {
@@ -664,6 +722,50 @@ const char *get_open_filenames(const char *filter, const char *fname) {
 }
 
 const char *get_open_filenames_ext(const char *filter, const char *fname, const char *dir, const char *title) {
+  #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
+  NFD_Init();
+  std::string res;
+  static string final_res;
+  const nfdpathset_t *outPaths;
+  setenv("QT_QPA_PLATFORM", "xcb", 1);
+  setenv("GDK_BACKEND", "x11", 1);
+  std::vector<std::vector<string>> vec;
+  vec = nfd_filter(filter);
+  std::vector<nfdu8filteritem_t> filters;
+  filters.reserve(vec.size());
+  for (const auto &ext : vec) {
+    if (!ext.empty() && ext.size() == 2 && ext[1].find("*") == string::npos) {
+      filters.emplace_back(nfdu8filteritem_t{ ext[0].c_str(), ext[1].c_str() });
+    }
+  }
+  nfdopendialogu8args_t args = { 0 };
+  args.filterList = filters.data();
+  args.filterCount = filters.size();
+  args.defaultPath = ((dir && strlen(dir)) ? dir : ((getenv("HOME")) ? getenv("HOME") : "/"));
+  args.parentWindow.type = NFD_WINDOW_HANDLE_TYPE_X11;
+  args.parentWindow.handle = (void *)(unsigned long long)strtoul(widget_get_owner(), nullptr, 10);
+  args.title = ((title && strlen(title)) ? title : "Open");
+  args.acceptLabel = widget_get_button_name(BUTTON_OK);
+  args.cancelLabel = widget_get_button_name(BUTTON_CANCEL);
+  nfdresult_t nfdresult = NFD_OpenDialogMultipleU8_With(&outPaths, &args);
+  if (nfdresult == NFD_OKAY) {
+    nfdpathsetsize_t numPaths;
+    NFD_PathSet_GetCount(outPaths, &numPaths);
+    for (nfdpathsetsize_t i = 0; i < numPaths; i++) {
+      nfdu8char_t *path;
+      NFD_PathSet_GetPath(outPaths, i, &path);
+      res += path;
+      if (i < numPaths - 1) {
+        res += string("\n");
+      }
+      NFD_PathSet_FreePath(path);
+    }
+    NFD_PathSet_Free(outPaths);
+    final_res = res;
+  }
+  NFD_Quit();
+  return final_res.c_str();
+  #else
   change_relative_to_kde();
   string str_command; string pwd;
   string caption_previous = caption;
@@ -701,6 +803,7 @@ const char *get_open_filenames_ext(const char *filter, const char *fname, const 
   if (success)
     return result.c_str();
   return "";
+  #endif
 }
 
 const char *get_save_filename(const char *filter, const char *fname) {
@@ -708,6 +811,39 @@ const char *get_save_filename(const char *filter, const char *fname) {
 }
 
 const char *get_save_filename_ext(const char *filter, const char *fname, const char *dir, const char *title) {
+  #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
+  NFD_Init();
+  static std::string res;
+  nfdu8char_t *outPath;
+  setenv("QT_QPA_PLATFORM", "xcb", 1);
+  setenv("GDK_BACKEND", "x11", 1);
+  std::vector<std::vector<string>> vec;
+  vec = nfd_filter(filter);
+  std::vector<nfdu8filteritem_t> filters;
+  filters.reserve(vec.size());
+  for (const auto &ext : vec) {
+    if (!ext.empty() && ext.size() == 2 && ext[1].find("*") == string::npos) {
+      filters.emplace_back(nfdu8filteritem_t{ ext[0].c_str(), ext[1].c_str() });
+    }
+  }
+  nfdsavedialogu8args_t args = { 0 };
+  args.filterList = filters.data();
+  args.filterCount = filters.size();
+  args.defaultPath = ((dir && strlen(dir)) ? dir : (getenv("HOME") ? getenv("HOME") : "/"));
+  args.defaultName = ((fname && strlen(fname)) ? fname : "");
+  args.parentWindow.type = NFD_WINDOW_HANDLE_TYPE_X11;
+  args.parentWindow.handle = (void *)(unsigned long long)strtoul(widget_get_owner(), nullptr, 10);
+  args.title = ((title && strlen(title)) ? title : "Save As");
+  args.acceptLabel = widget_get_button_name(BUTTON_OK);
+  args.cancelLabel = widget_get_button_name(BUTTON_CANCEL);
+  nfdresult_t nfdresult = NFD_SaveDialogU8_With(&outPath, &args);
+  if (nfdresult == NFD_OKAY) {
+    res = outPath;
+    NFD_FreePathU8(outPath);
+  }
+  NFD_Quit();
+  return res.c_str();
+  #else
   change_relative_to_kde();
   string str_command; string pwd;
   string caption_previous = caption;
@@ -737,6 +873,7 @@ const char *get_save_filename_ext(const char *filter, const char *fname, const c
   result = create_shell_dialog(str_command);
   caption = caption_previous;
   return result.c_str();
+  #endif
 }
 
 const char *get_directory(const char *dname) {
@@ -744,6 +881,32 @@ const char *get_directory(const char *dname) {
 }
 
 const char *get_directory_alt(const char *capt, const char *root) {
+  #if (defined(__linux__) && !defined(__ANDROID__))
+  NFD_Init();
+  static std::string res;
+  nfdu8char_t *outPath;
+  setenv("QT_QPA_PLATFORM", "xcb", 1);
+  setenv("GDK_BACKEND", "x11", 1);
+  nfdpickfolderu8args_t args = { 0 };
+  args.defaultPath = ((root && strlen(root)) ? root : (getenv("HOME") ? getenv("HOME") : "/"));
+  args.parentWindow.type = NFD_WINDOW_HANDLE_TYPE_X11;
+  args.parentWindow.handle = (void *)(unsigned long long)strtoul(widget_get_owner(), nullptr, 10);
+  args.title = ((capt && strlen(capt)) ? capt : "Select Directory");
+  args.acceptLabel = widget_get_button_name(BUTTON_OK);
+  args.cancelLabel = widget_get_button_name(BUTTON_CANCEL);
+  nfdresult_t nfdresult = NFD_PickFolderU8_With(&outPath, &args);
+  if (nfdresult == NFD_OKAY) {
+    res = outPath;
+    NFD_FreePathU8(outPath);
+  }
+  NFD_Quit();
+  if (res.empty() || res == "/") {
+    return res.c_str();
+  }
+  static string final_res;
+  final_res = ((res.back() != '/') ? res + std::string("/") : res);
+  return final_res.c_str();
+  #else
   change_relative_to_kde();
   string str_command; string pwd;
   string caption_previous = caption;
@@ -774,6 +937,7 @@ const char *get_directory_alt(const char *capt, const char *root) {
   static string final_result;
   final_result = ((result.back() != '/') ? result + std::string("/") : result);
   return final_result.c_str();
+  #endif
 }
 
 int get_color(int defcol) {
@@ -812,12 +976,12 @@ int get_color_ext(int defcol, const char *title) {
     str_result = string_replace_all(str_result, ")", "");
     std::vector<string> stringVec = string_split(str_result, ',');
 
-    unsigned int index = 0;
+    unsigned int ind = 0;
     for (const string &str : stringVec) {
-      if (index == 0) red = strtod(str.c_str(), nullptr);
-      if (index == 1) green = strtod(str.c_str(), nullptr);
-      if (index == 2) blue = strtod(str.c_str(), nullptr);
-      index += 1;
+      if (ind == 0) red = strtod(str.c_str(), nullptr);
+      if (ind == 1) green = strtod(str.c_str(), nullptr);
+      if (ind == 2) blue = strtod(str.c_str(), nullptr);
+      ind += 1;
     }
 
   } else if (dm_dialogengine == dm_kdialog) {
