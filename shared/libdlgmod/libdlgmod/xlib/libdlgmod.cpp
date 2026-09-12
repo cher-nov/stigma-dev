@@ -44,7 +44,7 @@ SOFTWARE.
 #include <libdlgmod/general/lodepng.h>
 #include <xprocess.hpp>
 #if (USE_XDG_DESKTOP_PORTAL && ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__))))
-#include <nfd.hpp>
+#include <nfd.h>
 #endif
 
 #include <sys/types.h>
@@ -680,6 +680,8 @@ const char *get_open_filename_ext(const char *filter, const char *fname, const c
   if (nfdresult == NFD_OKAY) {
     res = outPath;
     NFD_FreePathU8(outPath);
+  } else {
+    res.clear();
   }
   NFD_Quit();
   return res.c_str();
@@ -763,6 +765,8 @@ const char *get_open_filenames_ext(const char *filter, const char *fname, const 
     }
     NFD_PathSet_Free(outPaths);
     final_res = res;
+  } else {
+    final_res.clear();
   }
   NFD_Quit();
   return final_res.c_str();
@@ -841,6 +845,8 @@ const char *get_save_filename_ext(const char *filter, const char *fname, const c
   if (nfdresult == NFD_OKAY) {
     res = outPath;
     NFD_FreePathU8(outPath);
+  } else {
+    res.clear();
   }
   NFD_Quit();
   return res.c_str();
@@ -899,6 +905,8 @@ const char *get_directory_alt(const char *capt, const char *root) {
   if (nfdresult == NFD_OKAY) {
     res = outPath;
     NFD_FreePathU8(outPath);
+  } else {
+    res.clear();
   }
   NFD_Quit();
   if (res.empty() || res == "/") {
