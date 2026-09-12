@@ -1,28 +1,28 @@
 /*
 
- MIT License
+MIT License
 
- Copyright © 2021-2026 Samuel Venable
- Copyright © 2021 Nikita Krapivin
- Copyright © 2021 Robert B. Colton
+Copyright © 2021-2026 Samuel Venable
+Copyright © 2021 Nikita Krapivin
+Copyright © 2021 Robert B. Colton
 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 */
 
@@ -43,7 +43,7 @@
 #include <libdlgmod/libdlgmod.h>
 #include <libdlgmod/general/lodepng.h>
 #include <xprocess.hpp>
-#if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
+#if (USE_XDG_DESKTOP_PORTAL && ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__))))
 #include <nfd.hpp>
 #endif
 
@@ -289,7 +289,7 @@ string remove_trailing_zeros(double numb) {
   return strnumb;
 }
 
-#if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
+#if (USE_XDG_DESKTOP_PORTAL && ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__))))
 vector<vector<string>> nfd_filter(string input) {
   input = string_replace_all(input, "\r", "");
   input = string_replace_all(input, "\n", "");
@@ -652,7 +652,7 @@ const char *get_open_filename(const char *filter, const char *fname) {
 }
 
 const char *get_open_filename_ext(const char *filter, const char *fname, const char *dir, const char *title) {
-  #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
+  #if (USE_XDG_DESKTOP_PORTAL && ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__))))
   NFD_Init();
   static string res;
   nfdu8char_t *outPath;
@@ -723,7 +723,7 @@ const char *get_open_filenames(const char *filter, const char *fname) {
 }
 
 const char *get_open_filenames_ext(const char *filter, const char *fname, const char *dir, const char *title) {
-  #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
+  #if (USE_XDG_DESKTOP_PORTAL && ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__))))
   NFD_Init();
   string res;
   static string final_res;
@@ -812,7 +812,7 @@ const char *get_save_filename(const char *filter, const char *fname) {
 }
 
 const char *get_save_filename_ext(const char *filter, const char *fname, const char *dir, const char *title) {
-  #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
+  #if (USE_XDG_DESKTOP_PORTAL && ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__))))
   NFD_Init();
   static string res;
   nfdu8char_t *outPath;
@@ -882,7 +882,7 @@ const char *get_directory(const char *dname) {
 }
 
 const char *get_directory_alt(const char *capt, const char *root) {
-  #if (defined(__linux__) && !defined(__ANDROID__))
+  #if (USE_XDG_DESKTOP_PORTAL && ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__))))
   NFD_Init();
   static string res;
   nfdu8char_t *outPath;
