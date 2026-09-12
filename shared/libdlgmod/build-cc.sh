@@ -41,7 +41,7 @@ elif [ `uname` = "Linux" ]; then
   rm -rf "libdlgmod/xlib/libdlgmod.o" "libdlgmod/general/apiprocess/process.o" "libdlgmod/general/xprocess.o" "libdlgmod/general/lodepng.o" "libdlgmod/xlib/nfd/src/nfd_portal.o";
 elif [ `uname` = "FreeBSD" ]; then
   clang++ -c "libdlgmod/xlib/libdlgmod.cpp" -o "libdlgmod/xlib/libdlgmod.o" -DPROCESS_GUIWINDOW_IMPL -DNULLIFY_STDERR -Ilibdlgmod/general -Ilibdlgmod/xlib/nfd/src/include -I. -I/usr/local/include `pkg-config --cflags dbus-1` -std=c++17 -fPIC;
-  clang++ -c "libdlgmod/general/apiprocess/process.cpp" -o "libdlgmod/general/apiprocess/process.o" -DPROCESS_GUIWINDOW_IMPL -DNULLIFY_STDERR -Ilibdlgmod/xlib/nfd/src/include -Ilibdlgmod/general -I. -I/usr/local/include `pkg-config --cflags dbus-1` -std=c++17 -fPIC;
+  clang++ -c "libdlgmod/general/apiprocess/process.cpp" -o "libdlgmod/general/apiprocess/process.o" -DPROCESS_GUIWINDOW_IMPL -DNULLIFY_STDERR -Ilibdlgmod/general -Ilibdlgmod/xlib/nfd/src/include -I. -I/usr/local/include `pkg-config --cflags dbus-1` -std=c++17 -fPIC;
   clang++ -c "libdlgmod/general/xprocess.cpp" -o "libdlgmod/general/xprocess.o" -DPROCESS_GUIWINDOW_IMPL -DNULLIFY_STDERR -Ilibdlgmod/general -Ilibdlgmod/xlib/nfd/src/include -I. -I/usr/local/include `pkg-config --cflags dbus-1` -std=c++17 -fPIC;
   clang++ -c "libdlgmod/general/lodepng.cpp" -o "libdlgmod/general/lodepng.o" -DPROCESS_GUIWINDOW_IMPL -DNULLIFY_STDERR -Ilibdlgmod/general -Ilibdlgmod/xlib/nfd/src/include -I. -I/usr/local/include `pkg-config --cflags dbus-1` -std=c++17 -fPIC;
   clang++ -c "libdlgmod/xlib/nfd/src/nfd_portal.cpp" -o "libdlgmod/xlib/nfd/src/nfd_portal.o" -DPROCESS_GUIWINDOW_IMPL -DNULLIFY_STDERR -Ilibdlgmod/general -Ilibdlgmod/xlib/nfd/src/include -I. `pkg-config --cflags dbus-1` -std=c++17 -fPIC;
