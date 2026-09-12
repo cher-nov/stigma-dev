@@ -61,6 +61,7 @@
 #include <X11/Xutil.h>
 
 using std::string;
+using std::stringstream;
 using std::to_string;
 using std::vector;
 
@@ -280,7 +281,7 @@ string create_shell_dialog(string command) {
 }
 
 string remove_trailing_zeros(double numb) {
-  string strnumb = std::to_string(numb);
+  string strnumb = to_string(numb);
 
   while (!strnumb.empty() && strnumb.find('.') != string::npos && (strnumb.back() == '.' || strnumb.back() == '0'))
     strnumb.pop_back();
@@ -289,12 +290,12 @@ string remove_trailing_zeros(double numb) {
 }
 
 #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
-std::vector<std::vector<string>> nfd_filter(string input) {
+vector<vector<string>> nfd_filter(string input) {
   input = string_replace_all(input, "\r", "");
   input = string_replace_all(input, "\n", "");
-  std::vector<string> stringVec = string_split(input, '|');
-  std::vector<std::vector<std::string>> output;
-  std::vector<string> vec;
+  vector<string> stringVec = string_split(input, '|');
+  vector<vector<string>> output;
+  vector<string> vec;
   unsigned ind = 0;
   for (string str : stringVec) {
     if (ind % 2 == 0) {
@@ -319,7 +320,7 @@ std::vector<std::vector<string>> nfd_filter(string input) {
 string zenity_filter(string input) {
   input = string_replace_all(input, "\r", "");
   input = string_replace_all(input, "\n", "");
-  std::vector<string> stringVec = string_split(input, '|');
+  vector<string> stringVec = string_split(input, '|');
   string string_output;
   unsigned ind = 0;
   for (string str : stringVec) {
@@ -338,7 +339,7 @@ string zenity_filter(string input) {
 string kdialog_filter(string input) {
   input = string_replace_all(input, "\r", "");
   input = string_replace_all(input, "\n", "");
-  std::vector<string> stringVec = string_split(input, '|');
+  vector<string> stringVec = string_split(input, '|');
   string string_output = " \"";
   unsigned ind = 0;
   for (string str : stringVec) {
@@ -653,13 +654,13 @@ const char *get_open_filename(const char *filter, const char *fname) {
 const char *get_open_filename_ext(const char *filter, const char *fname, const char *dir, const char *title) {
   #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
   NFD_Init();
-  static std::string res;
+  static string res;
   nfdu8char_t *outPath;
   setenv("QT_QPA_PLATFORM", "xcb", 1);
   setenv("GDK_BACKEND", "x11", 1);
-  std::vector<std::vector<string>> vec;
+  vector<vector<string>> vec;
   vec = nfd_filter(filter);
-  std::vector<nfdu8filteritem_t> filters;
+  vector<nfdu8filteritem_t> filters;
   filters.reserve(vec.size());
   for (const auto &ext : vec) {
     if (!ext.empty() && ext.size() == 2 && ext[1].find("*") == string::npos) {
@@ -724,14 +725,14 @@ const char *get_open_filenames(const char *filter, const char *fname) {
 const char *get_open_filenames_ext(const char *filter, const char *fname, const char *dir, const char *title) {
   #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
   NFD_Init();
-  std::string res;
+  string res;
   static string final_res;
   const nfdpathset_t *outPaths;
   setenv("QT_QPA_PLATFORM", "xcb", 1);
   setenv("GDK_BACKEND", "x11", 1);
-  std::vector<std::vector<string>> vec;
+  vector<vector<string>> vec;
   vec = nfd_filter(filter);
-  std::vector<nfdu8filteritem_t> filters;
+  vector<nfdu8filteritem_t> filters;
   filters.reserve(vec.size());
   for (const auto &ext : vec) {
     if (!ext.empty() && ext.size() == 2 && ext[1].find("*") == string::npos) {
@@ -794,7 +795,7 @@ const char *get_open_filenames_ext(const char *filter, const char *fname, const 
   static string result;
   result = create_shell_dialog(str_command);
   caption = caption_previous;
-  std::vector<string> stringVec = string_split(result, '\n');
+  vector<string> stringVec = string_split(result, '\n');
   bool success = true;
   for (const string &str : stringVec) {
     if (!file_exists(str))
@@ -813,13 +814,13 @@ const char *get_save_filename(const char *filter, const char *fname) {
 const char *get_save_filename_ext(const char *filter, const char *fname, const char *dir, const char *title) {
   #if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
   NFD_Init();
-  static std::string res;
+  static string res;
   nfdu8char_t *outPath;
   setenv("QT_QPA_PLATFORM", "xcb", 1);
   setenv("GDK_BACKEND", "x11", 1);
-  std::vector<std::vector<string>> vec;
+  vector<vector<string>> vec;
   vec = nfd_filter(filter);
-  std::vector<nfdu8filteritem_t> filters;
+  vector<nfdu8filteritem_t> filters;
   filters.reserve(vec.size());
   for (const auto &ext : vec) {
     if (!ext.empty() && ext.size() == 2 && ext[1].find("*") == string::npos) {
@@ -883,7 +884,7 @@ const char *get_directory(const char *dname) {
 const char *get_directory_alt(const char *capt, const char *root) {
   #if (defined(__linux__) && !defined(__ANDROID__))
   NFD_Init();
-  static std::string res;
+  static string res;
   nfdu8char_t *outPath;
   setenv("QT_QPA_PLATFORM", "xcb", 1);
   setenv("GDK_BACKEND", "x11", 1);
@@ -904,7 +905,7 @@ const char *get_directory_alt(const char *capt, const char *root) {
     return res.c_str();
   }
   static string final_res;
-  final_res = ((res.back() != '/') ? res + std::string("/") : res);
+  final_res = ((res.back() != '/') ? res + string("/") : res);
   return final_res.c_str();
   #else
   change_relative_to_kde();
@@ -935,7 +936,7 @@ const char *get_directory_alt(const char *capt, const char *root) {
     return result.c_str();
   }
   static string final_result;
-  final_result = ((result.back() != '/') ? result + std::string("/") : result);
+  final_result = ((result.back() != '/') ? result + string("/") : result);
   return final_result.c_str();
   #endif
 }
@@ -962,8 +963,8 @@ int get_color_ext(int defcol, const char *title) {
   blue = color_get_blue(defcol);
 
   if (dm_dialogengine == dm_zenity) {
-    str_defcol = string("rgb(") + std::to_string(red) + string(",") +
-    std::to_string(green) + string(",") + std::to_string(blue) + string(")");
+    str_defcol = string("rgb(") + to_string(red) + string(",") +
+    to_string(green) + string(",") + to_string(blue) + string(")");
     str_command = string("ans=$(zenity ") +
     string("--color-selection --show-palette --title=\"") + str_title + string("\" --color='") +
     str_defcol + string("'") + str_icon + string(");if [ $? = 0 ] ;then echo $ans;else echo -1;fi");
@@ -974,7 +975,7 @@ int get_color_ext(int defcol, const char *title) {
     str_result = string_replace_all(str_result, "rgba(", "");
     str_result = string_replace_all(str_result, "rgb(", "");
     str_result = string_replace_all(str_result, ")", "");
-    std::vector<string> stringVec = string_split(str_result, ',');
+    vector<string> stringVec = string_split(str_result, ',');
 
     unsigned int ind = 0;
     for (const string &str : stringVec) {
@@ -1001,7 +1002,7 @@ int get_color_ext(int defcol, const char *title) {
     str_result = str_result.substr(1, str_result.length() - 1);
 
     unsigned int color;
-    std::stringstream ss2;
+    stringstream ss2;
     ss2 << std::hex << str_result;
     ss2 >> color;
 
