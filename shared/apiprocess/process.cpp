@@ -1238,9 +1238,9 @@ namespace apiprocess {
           std::string comm = pe.szExeFile; std::size_t len = comm.length();
           if (len >= 4 && !comm.substr(len - 4).compare(".exe")) {
             if (!proc_id_is_kernel_thread(pe.th32ParentProcessID)) {
-              if (proc_id_and_parent_proc_id_compare_creation_time(pe.th32ProcessID, pe.th32ParentProcessID)) {
+              //if (proc_id_and_parent_proc_id_compare_creation_time(pe.th32ProcessID, pe.th32ParentProcessID)) {
                 vec.push_back(pe.th32ParentProcessID);
-              }
+              //}
             }
           }
           break;
@@ -1253,9 +1253,9 @@ namespace apiprocess {
     if (proc_pidinfo(proc_id, PROC_PIDTBSDINFO, 0, &proc_info, sizeof(proc_info)) > 0) {
       if (!(proc_info.pbi_flags & P_SYSTEM)) {
         if (!proc_id_is_kernel_thread(proc_info.pbi_ppid)) {
-          if (proc_id_and_parent_proc_id_compare_creation_time(proc_info.pbi_pid, proc_info.pbi_ppid)) {
+          //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info.pbi_pid, proc_info.pbi_ppid)) {
             vec.push_back(proc_info.pbi_ppid);
-          }
+          //}
         }
       }
     }
@@ -1278,9 +1278,9 @@ namespace apiprocess {
           proc_id_t parent_proc_id = strtoul(token, nullptr, 10);
           if (!proc_id_is_kernel_thread(proc_id)) {
             if (!proc_id_is_kernel_thread(parent_proc_id)) {
-              if (proc_id_and_parent_proc_id_compare_creation_time(proc_id, parent_proc_id)) {
+              //if (proc_id_and_parent_proc_id_compare_creation_time(proc_id, parent_proc_id)) {
                 vec.push_back(parent_proc_id);
-              }
+              //}
             }
           }
         }
@@ -1298,9 +1298,9 @@ namespace apiprocess {
     if ((proc_info = kvm_getprocs(kd, KERN_PROC_PID, proc_id, &cntp))) {
       if (!(proc_info->ki_flag & P_SYSTEM) || proc_info->ki_pid == 1) {
         if (!proc_id_is_kernel_thread(proc_info->ki_ppid)) {
-          if (proc_id_and_parent_proc_id_compare_creation_time(proc_info->ki_pid, proc_info->ki_ppid)) {
+          //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info->ki_pid, proc_info->ki_ppid)) {
             vec.push_back(proc_info->ki_ppid);
-          }
+          //}
         }
       }
     }
@@ -1316,9 +1316,9 @@ namespace apiprocess {
     if ((proc_info = kvm_getprocs(kd, KERN_PROC_PID, proc_id, &cntp))) {
       if (!(proc_info->kp_flags & P_SYSTEM) || proc_info->kp_pid == 1) {
         if (!proc_id_is_kernel_thread(proc_info->kp_ppid)) {
-          if (proc_id_and_parent_proc_id_compare_creation_time(proc_info->kp_pid, proc_info->kp_ppid)) {
+          //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info->kp_pid, proc_info->kp_ppid)) {
             vec.push_back(proc_info->kp_ppid);
-          }
+          //}
         }
       }
     }
@@ -1332,9 +1332,9 @@ namespace apiprocess {
     if ((proc_info = kvm_getproc2(kd, KERN_PROC_PID, proc_id, sizeof(struct kinfo_proc2), &cntp))) {
       if (!(proc_info->p_flag & P_SYSTEM)) {
         if (!proc_id_is_kernel_thread(proc_info->p_ppid)) {
-          if (proc_id_and_parent_proc_id_compare_creation_time(proc_info->p_pid, proc_info->p_ppid)) {
+          //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info->p_pid, proc_info->p_ppid)) {
             vec.push_back(proc_info->p_ppid);
-          }
+          //}
         }
       }
     }
@@ -1348,9 +1348,9 @@ namespace apiprocess {
     if ((proc_info = kvm_getprocs(kd, KERN_PROC_PID, proc_id, sizeof(struct kinfo_proc), &cntp))) {
       if (!(proc_info->p_flag & P_SYSTEM)) {
         if (!proc_id_is_kernel_thread(proc_info->p_ppid)) {
-          if (proc_id_and_parent_proc_id_compare_creation_time(proc_info->p_pid, proc_info->p_ppid)) {
+          //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info->p_pid, proc_info->p_ppid)) {
             vec.push_back(proc_info->p_ppid);
-          }
+          //}
         }
       }
     }
@@ -1368,9 +1368,9 @@ namespace apiprocess {
       if (read(fd, &pstatus, sizeof(pstatus_t)) > 0) {
         if (!(pstatus.pr_flags & PR_ISSYS) && pstatus.pr_pid != 0) {
           if (!proc_id_is_kernel_thread(pstatus.pr_ppid)) {
-            if (proc_id_and_parent_proc_id_compare_creation_time(pstatus.pr_pid, pstatus.pr_ppid)) {
+            //if (proc_id_and_parent_proc_id_compare_creation_time(pstatus.pr_pid, pstatus.pr_ppid)) {
               vec.push_back(pstatus.pr_ppid);
-            }
+            //}
           }
         }
       }
@@ -1388,9 +1388,9 @@ namespace apiprocess {
       if (kvm_kread(kd, (std::uintptr_t)proc_info->p_pidp, &cur_pid, sizeof(cur_pid)) != -1) {
         if (!(proc_info->p_flag & SSYS) && cur_pid.pid_id != 0) {
           if (!proc_id_is_kernel_thread(proc_info->p_ppid)) {
-            if (proc_id_and_parent_proc_id_compare_creation_time(cur_pid.pid_id, proc_info->p_ppid)) {
+            //if (proc_id_and_parent_proc_id_compare_creation_time(cur_pid.pid_id, proc_info->p_ppid)) {
               vec.push_back(proc_info->p_ppid);
-            }
+            //}
           }
         }
       }
@@ -1418,9 +1418,9 @@ namespace apiprocess {
           std::string comm = pe.szExeFile; std::size_t len = comm.length();
           if (len >= 4 && !comm.substr(len - 4).compare(".exe")) {
             if (!proc_id_is_kernel_thread(pe.th32ParentProcessID)) {
-              if (proc_id_and_parent_proc_id_compare_creation_time(pe.th32ProcessID, pe.th32ParentProcessID)) {
+              //if (proc_id_and_parent_proc_id_compare_creation_time(pe.th32ProcessID, pe.th32ParentProcessID)) {
                 vec.push_back(pe.th32ProcessID);
-              }
+              //}
             }
           }
         }
@@ -1435,9 +1435,9 @@ namespace apiprocess {
       if (proc_info[i] > 0) {
         if (!proc_id_is_kernel_thread(proc_info[i])) {
           if (!proc_id_is_kernel_thread(parent_proc_id)) {
-            if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i], parent_proc_id)) {
+            //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i], parent_proc_id)) {
               vec.push_back(proc_info[i]);
-            }
+            //}
           }
         }
       }
@@ -1454,9 +1454,9 @@ namespace apiprocess {
         if (!proc_info.empty() && proc_info[0] == parent_proc_id) {
           if (!proc_id_is_kernel_thread(tgid)) {
             if (!proc_id_is_kernel_thread(proc_info[0])) {
-              if (proc_id_and_parent_proc_id_compare_creation_time(tgid, proc_info[0])) {
+              //if (proc_id_and_parent_proc_id_compare_creation_time(tgid, proc_info[0])) {
                 vec.push_back(tgid);
-              }
+              //}
             }
           }
         }
@@ -1476,9 +1476,9 @@ namespace apiprocess {
         if (proc_info[i].ki_ppid == parent_proc_id) {
           if (!(proc_info[i].ki_flag & P_SYSTEM) || proc_info[i].ki_pid == 1) {
             if (!proc_id_is_kernel_thread(proc_info[i].ki_ppid)) {
-              if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i].ki_pid, proc_info[i].ki_ppid)) {
+              //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i].ki_pid, proc_info[i].ki_ppid)) {
                 vec.push_back(proc_info[i].ki_pid);
-              }
+              //}
             }
           }
         }
@@ -1498,9 +1498,9 @@ namespace apiprocess {
         if (proc_info[i].kp_ppid == parent_proc_id) {
           if (!(proc_info[i].kp_flags & P_SYSTEM) || proc_info[i].kp_pid == 1) {
             if (!proc_id_is_kernel_thread(proc_info[i].kp_ppid)) {
-              if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i].kp_pid, proc_info[i].kp_ppid)) {
+              //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i].kp_pid, proc_info[i].kp_ppid)) {
                 vec.push_back(proc_info[i].kp_pid);
-              }
+              //}
             }
           }
         }
@@ -1518,9 +1518,9 @@ namespace apiprocess {
         if (proc_info[i].p_ppid == parent_proc_id) {
           if (!(proc_info[i].p_flag & P_SYSTEM)) {
             if (!proc_id_is_kernel_thread(proc_info[i].p_ppid)) {
-              if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i].p_pid, proc_info[i].p_ppid)) {
+              //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i].p_pid, proc_info[i].p_ppid)) {
                 vec.push_back(proc_info[i].p_pid);
-              }
+              //}
             }
           }
         }
@@ -1538,9 +1538,9 @@ namespace apiprocess {
         if (proc_info[i].p_ppid == parent_proc_id) {
           if (!(proc_info[i].p_flag & P_SYSTEM)) {
             if (!proc_id_is_kernel_thread(proc_info[i].p_ppid)) {
-              if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i].p_pid, proc_info[i].p_ppid)) {
+              //if (proc_id_and_parent_proc_id_compare_creation_time(proc_info[i].p_pid, proc_info[i].p_ppid)) {
                 vec.push_back(proc_info[i].p_pid);
-              }
+              //}
             }
           }
         }
@@ -1562,9 +1562,9 @@ namespace apiprocess {
         if (proc_info->p_ppid == parent_proc_id) {
           if (!(proc_info->p_flag & SSYS) && cur_pid.pid_id != 0) {
             if (!proc_id_is_kernel_thread(proc_info->p_ppid)) {
-              if (proc_id_and_parent_proc_id_compare_creation_time(cur_pid.pid_id, proc_info->p_ppid)) {
+              //if (proc_id_and_parent_proc_id_compare_creation_time(cur_pid.pid_id, proc_info->p_ppid)) {
                 vec.insert(vec.begin(), cur_pid.pid_id);
-              }
+              //}
             }
           }
         }
