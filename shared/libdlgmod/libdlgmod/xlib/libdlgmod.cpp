@@ -43,7 +43,7 @@
 #include <libdlgmod/libdlgmod.h>
 #include <libdlgmod/general/lodepng.h>
 #include <xprocess.hpp>
-#if (defined(__linux__) && !defined(__ANDROID__))
+#if ((defined(__linux__) && !defined(__ANDROID__)) || (defined(__FreeBSD__) || defined(__FreeBSD_kernel__)))
 #include <nfd.hpp>
 #endif
 
